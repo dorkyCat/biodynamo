@@ -17,7 +17,7 @@
 # Reduce the amount of install messages (especially if we need
 # to install ROOT, Paraview and Qt).
 if (NOT verbose)
-    set(CMAKE_INSTALL_MESSAGE NEVER)
+    # set(CMAKE_INSTALL_MESSAGE NEVER)
 endif()
 
 # check if CMAKE_INSTALL_PREFIX is empty or /opt/biodynamo
