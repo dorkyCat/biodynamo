@@ -59,15 +59,18 @@ Simulation::Simulation(TRootIOCtor* p) {}
 
 Simulation::Simulation(int argc, const char** argv,
                        const std::string& config_file)
-    : Simulation(argc, argv, [](auto* param) {}, config_file) {}
+    : Simulation(
+          argc, argv, [](auto* param) {}, config_file) {}
 
 Simulation::Simulation(const std::string& simulation_name,
                        const std::string& config_file)
-    : Simulation(simulation_name, [](auto* param) {}, config_file) {}
+    : Simulation(
+          simulation_name, [](auto* param) {}, config_file) {}
 
 Simulation::Simulation(CommandLineOptions* clo,
                        const std::string& config_file) {
-  Initialize(clo, [](auto* param) {}, config_file);
+  Initialize(
+      clo, [](auto* param) {}, config_file);
 }
 
 Simulation::Simulation(CommandLineOptions* clo,
@@ -78,7 +81,8 @@ Simulation::Simulation(CommandLineOptions* clo,
 
 Simulation::Simulation(int argc, const char** argv, XMLParams* xml_params) {
   auto options = CommandLineOptions(argc, argv);
-  Initialize(&options, [](auto* param) {}, "", xml_params);
+  Initialize(
+      &options, [](auto* param) {}, "", xml_params);
 }
 
 Simulation::Simulation(int argc, const char** argv,
@@ -300,6 +304,12 @@ void Simulation::InitializeRuntimeParams(
   }
 
   ocl_state_ = new OpenCLState();
+
+  if (clo->Get<bool>("visualize")) {
+    param_->export_visualization_ = true;
+    param_->visualization_export_interval_ =
+        clo->Get<uint32_t>("vis-frequency");
+  }
 
   // Handle xml arguments
   if (clo->Get<std::string>("xml") != "") {
