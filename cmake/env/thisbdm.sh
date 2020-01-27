@@ -337,7 +337,6 @@ if [ $(uname) != "Darwin" ]; then
             . scl_source enable devtoolset-7
         fi
         . /etc/profile.d/modules.sh
-        module load mpi
 
         # load llvm 6 required for libroadrunner
         if [ -d ${BDMSYS}/third_party/libroadrunner ]; then
