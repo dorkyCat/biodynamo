@@ -28,7 +28,9 @@ jobs:
     - name: Install BioDynaMo
       shell: bash
       run: |
-        yum install -y redhat-lsb-core sudo
+        yum install -y redhat-lsb-core sudo git
+        git config --system user.name "Test User"
+        git config --system user.email user@test.com
         ./install.sh << EOF
         y
         EOF
@@ -62,8 +64,6 @@ jobs:
         . /etc/profile.d/modules.sh || true
         module load mpi
         . $INSTALL_DIR/bin/thisbdm.sh
-        git config --system user.name "Test User"
-        git config --system user.email user@test.com
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
         sleep 3
