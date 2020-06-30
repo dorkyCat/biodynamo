@@ -28,6 +28,7 @@ jobs:
     - name: Install BioDynaMo
       shell: bash
       run: |
+        sudo yum install -y redhat-lsb-core
         ./install.sh << EOF
         y
         EOF
