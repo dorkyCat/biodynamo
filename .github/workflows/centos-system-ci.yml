@@ -26,7 +26,8 @@ jobs:
         fetch-depth: 0
 
     - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v2
+      uses: mxschmitt/action-tmate@feature/optional-sudo
+      sudo: false
 
     - name: Install BioDynaMo
       shell: bash
