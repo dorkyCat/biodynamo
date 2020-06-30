@@ -26,7 +26,7 @@ jobs:
         fetch-depth: 0
 
     - name: Setup tmate session
-      uses: mxschmitt/action-tmate@74a0377
+      uses: Senui/action-tmate@v2.0.1
       with:
         sudo: false
 
