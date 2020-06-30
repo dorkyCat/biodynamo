@@ -73,7 +73,7 @@ jobs:
         ../util/xvfb-initd.sh start
         sleep 3
         biodynamo new test-sim
-        . ../util/installation/common/util.sh
+        . ../test/util.inc
         run_cmake_simulation test-sim
         ../util/xvfb-initd.sh stop
 
