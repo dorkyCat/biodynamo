@@ -25,11 +25,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Setup tmate session
-      uses: Senui/action-tmate@v2.0.1
-      with:
-        sudo: false
-
     - name: Install BioDynaMo
       shell: bash
       run: |
