@@ -26,8 +26,8 @@ jobs:
     - name: Install latest version of git
       shell: bash
       run: |
-      yum install -y http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-2.noarch.rpm
-      yum install -y git
+        yum install -y http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-2.noarch.rpm
+        yum install -y git
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
