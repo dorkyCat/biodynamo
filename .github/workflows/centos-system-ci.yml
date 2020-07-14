@@ -20,20 +20,22 @@ jobs:
       image: centos:7
 
     steps:
+      # Do this prior to Checkout BioDynaMo, because the CentOS docker container
+      # does not come with git preinstalled. This will mess up later calls to 
+      # `git describe --tags`
+    - name: Install latest version of git
+      shell: bash
+      run: yum install -y git
+
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
     
-    - name: Get all git tags
-      run: git fetch --prune --unshallow --tags
-
     - name: Install BioDynaMo
       shell: bash
       run: |
-        yum install -y redhat-lsb-core sudo git
-        git config --system user.name "Test User"
-        git config --system user.email user@test.com
+        yum install -y redhat-lsb-core sudo
         ./install.sh << EOF
         y
         EOF
