@@ -37,7 +37,8 @@ jobs:
     - name: Install BioDynaMo
       shell: bash
       run: |
-        yum install -y redhat-lsb-core sudo server-Xvfb
+        yum update -y
+        yum install -y redhat-lsb-core sudo xorg-x11-server-Xvfb
         ./install.sh << EOF
         y
         EOF
