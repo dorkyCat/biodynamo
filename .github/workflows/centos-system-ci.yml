@@ -38,7 +38,7 @@ jobs:
       shell: bash
       run: |
         yum update -y
-        yum install -y redhat-lsb-core sudo xorg-x11-server-Xvfb
+        yum install -y redhat-lsb-core sudo xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         ./install.sh << EOF
         y
         EOF
