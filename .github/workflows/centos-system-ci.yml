@@ -59,7 +59,7 @@ jobs:
         . /etc/profile.d/modules.sh || true
         module load mpi
         . $INSTALL_DIR/bin/thisbdm.sh
-        xvfb-run -d -s 2560x1440x24 make run-valgrind
+        xvfb-run -d -s "-screen 0 2560x1440x24" make run-valgrind
 
     - name: System tests BioDynaMo
       shell: bash
@@ -69,7 +69,7 @@ jobs:
         . /etc/profile.d/modules.sh || true
         module load mpi
         . $INSTALL_DIR/bin/thisbdm.sh
-        xvfb-run -d -s 2560x1440x24 make run-demos
+        xvfb-run -d -s "-screen 0 2560x1440x24" make run-demos
 
     - name: Test out-of-source simulation
       shell: bash
@@ -81,7 +81,7 @@ jobs:
         . $INSTALL_DIR/bin/thisbdm.sh
         biodynamo new test-sim
         . ../test/util.inc
-        xvfb-run -d -s 2560x1440x24 run_cmake_simulation test-sim
+        xvfb-run -d -s "-screen 0 2560x1440x24" run_cmake_simulation test-sim
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
