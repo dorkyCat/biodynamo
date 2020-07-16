@@ -58,11 +58,7 @@ jobs:
         . /etc/profile.d/modules.sh || true
         module load mpi
         . $INSTALL_DIR/bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
-        make run-valgrind
-        ../util/xvfb-initd.sh stop
+        xvfb-run --auto-servernum make run-valgrind
 
     - name: System tests BioDynaMo
       shell: bash
@@ -72,11 +68,7 @@ jobs:
         . /etc/profile.d/modules.sh || true
         module load mpi
         . $INSTALL_DIR/bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
-        make run-demos
-        ../util/xvfb-initd.sh stop
+        xvfb-run --auto-servernum make run-demos
 
     - name: Test out-of-source simulation
       shell: bash
@@ -86,13 +78,9 @@ jobs:
         . /etc/profile.d/modules.sh || true
         module load mpi
         . $INSTALL_DIR/bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
         biodynamo new test-sim
         . ../test/util.inc
-        run_cmake_simulation test-sim
-        ../util/xvfb-initd.sh stop
+        xvfb-run --auto-servernum run_cmake_simulation test-sim
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
