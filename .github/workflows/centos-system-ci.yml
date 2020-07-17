@@ -62,7 +62,10 @@ jobs:
         tmate -S /tmp/tmate.sock new-session -d
         tmate -S /tmp/tmate.sock wait tmate-ready
         tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
-        sleep infinity
+      
+    - name: Sleep
+      shell: bash
+      run: sleep infinity
 
     # - name: Valgrind tests BioDynaMo
     #   shell: bash
