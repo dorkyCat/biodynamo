@@ -51,6 +51,18 @@ jobs:
         [[ $VERSION =~ $REGEX ]]
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
 
+    - name: Live debugging
+      shell: bash
+      run: |
+        yum install epel-release -y
+        yum update -y
+        yum install -y tmate openssh-clients
+        echo -e 'y\n'|ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
+        tmate -S /tmp/tmate.sock new-session -d
+        tmate -S /tmp/tmate.sock wait tmate-ready
+        tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
+        sleep infinity
+
     # - name: Valgrind tests BioDynaMo
     #   shell: bash
     #   working-directory: build
