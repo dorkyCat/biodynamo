@@ -57,6 +57,7 @@ jobs:
         yum install epel-release -y
         yum update -y
         yum install -y tmate openssh-clients
+        mkdir -p ~/.ssh
         echo -e 'y\n'|ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
         tmate -S /tmp/tmate.sock new-session -d
         tmate -S /tmp/tmate.sock wait tmate-ready
