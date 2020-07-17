@@ -62,16 +62,14 @@ if [ $BDM_OS = "centos-7" ]; then
   # operation not permitted errors", due to docker security constraints
   if [ ! -z ${GITHUB_ACTIONS+x} ]; then
     BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -Dnuma=off"
-  # We already perform these actions in the GH Actions workflow, so we can skip
-  else
-    export MESA_GL_VERSION_OVERRIDE=3.3
-    if [ -z ${CXX} ] && [ -z ${CC} ] ; then
-      . scl_source enable devtoolset-7
-    fi
+  fi
 
-    . /etc/profile.d/modules.sh
-    module load mpi
-  fi  
+  if [ -z ${CXX} ] && [ -z ${CC} ] ; then
+    . scl_source enable devtoolset-7
+  fi
+
+  . /etc/profile.d/modules.sh
+  module load mpi
 fi
 set -e
 

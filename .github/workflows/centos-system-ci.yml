@@ -51,15 +51,15 @@ jobs:
         [[ $VERSION =~ $REGEX ]]
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
 
-    - name: Valgrind tests BioDynaMo
-      shell: bash
-      working-directory: build
-      run: |
-        . scl_source enable devtoolset-7 || true
-        . /etc/profile.d/modules.sh || true
-        module load mpi
-        . $INSTALL_DIR/bin/thisbdm.sh
-        make run-valgrind
+    # - name: Valgrind tests BioDynaMo
+    #   shell: bash
+    #   working-directory: build
+    #   run: |
+    #     . scl_source enable devtoolset-7 || true
+    #     . /etc/profile.d/modules.sh || true
+    #     module load mpi
+    #     . $INSTALL_DIR/bin/thisbdm.sh
+    #     make run-valgrind
 
     - name: System tests BioDynaMo
       shell: bash
