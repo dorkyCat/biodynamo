@@ -41,10 +41,7 @@ jobs:
         . bin/thisbdm.sh
         git config --system user.name "Test User"
         git config --system user.email user@test.com
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
         ninja run-demos
-        ../util/xvfb-initd.sh stop
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
