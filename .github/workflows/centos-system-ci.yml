@@ -40,7 +40,7 @@ jobs:
         yum update -y
         yum install -y redhat-lsb-core sudo xorg-x11-server-Xvfb fontconfig \
           mesa-dri-drivers xorg-x11-xauth which
-        BDM_CMAKE_FLAGS="-Dparaview=off" ./install.sh << EOF
+        BDM_CMAKE_FLAGS="-Dnotebooks=ON -Dsbml=ON" ./install.sh << EOF
         y
         EOF
 
