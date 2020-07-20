@@ -1,84 +1,84 @@
 #!/bin/bash
-# # -----------------------------------------------------------------------------
-# #
-# # Copyright (C) The BioDynaMo Project.
-# # All Rights Reserved.
-# #
-# # Licensed under the Apache License, Version 2.0 (the "License");
-# # you may not use this file except in compliance with the License.
-# #
-# # See the LICENSE file distributed with this work for details.
-# # See the NOTICE file distributed with this work for additional information
-# # regarding copyright ownership.
-# #
-# # -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+#
+# Copyright (C) The BioDynaMo Project.
+# All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+#
+# See the LICENSE file distributed with this work for details.
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# -----------------------------------------------------------------------------
 
-# # This script installs the required packages for ubuntu 16.04
-# if [[ $# -ne 1 ]]; then
-#   echo "ERROR: Wrong number of arguments.
-# Description:
-#     This script installs the prerequisites of BioDynaMo, but not BioDynaMo
-#     itself. Script install.sh installs both prerequisites and BioDynaMo.
-# Arguments:
-#     <install_type>  all/required. If all is specified, then this script
-#                     will install all the prerequisites."
-#   exit 1
-# fi
+# This script installs the required packages for ubuntu 16.04
+if [[ $# -ne 1 ]]; then
+  echo "ERROR: Wrong number of arguments.
+Description:
+    This script installs the prerequisites of BioDynaMo, but not BioDynaMo
+    itself. Script install.sh installs both prerequisites and BioDynaMo.
+Arguments:
+    <install_type>  all/required. If all is specified, then this script
+                    will install all the prerequisites."
+  exit 1
+fi
 
-# sudo -v
-# # add repository for clang-3.9
-# sudo yum update -y
+sudo -v
+# add repository for clang-3.9
+sudo yum update -y
 
-# # install packages
-# sudo yum -y install centos-release-scl epel-release
-# sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+# install packages
+sudo yum -y install centos-release-scl epel-release
+sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 
-# sudo yum -y install wget cmake3 libXt-devel libXext-devel \
-#   devtoolset-7-gcc* numactl-devel bzip2-devel zlib-devel \
-#   openmpi3-devel freeglut-devel git
+sudo yum -y install wget cmake3 libXt-devel libXext-devel \
+  devtoolset-7-gcc* numactl-devel bzip2-devel zlib-devel \
+  openmpi3-devel freeglut-devel git
 
-# # Install dependencies to install Python with PyEnv
-# sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
-#   sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
+# Install dependencies to install Python with PyEnv
+sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
+  sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
 
-# if [ -n "${PYENV_ROOT}" ]; then
-#   unset PYENV_ROOT
-# fi
+if [ -n "${PYENV_ROOT}" ]; then
+  unset PYENV_ROOT
+fi
 
-# # If PyEnv is not installed, install it
-# if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
-#   echo "PyEnv was not found. Installing now..."
-#   curl https://pyenv.run | bash
-# fi
-# export PATH="$HOME/.pyenv/bin:$PATH"
-# eval "$(pyenv init -)"
+# If PyEnv is not installed, install it
+if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
+  echo "PyEnv was not found. Installing now..."
+  curl https://pyenv.run | bash
+fi
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
 
-# PYVERS=3.6.9
+PYVERS=3.6.9
 
-# # If Python $PYVERS is not installed, install it
-# if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then
-#   echo "Python $PYVERS was not found. Installing now..."
-#   env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
-# fi
-# pyenv shell $PYVERS
+# If Python $PYVERS is not installed, install it
+if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then
+  echo "Python $PYVERS was not found. Installing now..."
+  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
+fi
+pyenv shell $PYVERS
 
-# # Install optional packages
-# if [ $1 == "all" ]; then
-#   PIP_PACKAGES="nbformat jupyter metakernel"
-#   pip install --user $PIP_PACKAGES
-#   sudo yum -y install lcov gcovr llvm-toolset-7 llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind
-#   # SBML integration
-#   sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
-# [SCL-core]
-# name=Springdale SCL Base 7.6 - x86_64
-# mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirrorlist
-# #baseurl=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64
-# gpgcheck=1
-# gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
-# EOF'
-#   sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
-#   sudo yum install -y libxml2-devel
-# fi
+# Install optional packages
+if [ $1 == "all" ]; then
+  PIP_PACKAGES="nbformat jupyter metakernel"
+  pip install --user $PIP_PACKAGES
+  sudo yum -y install lcov gcovr llvm-toolset-7 llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind
+  # SBML integration
+  sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
+[SCL-core]
+name=Springdale SCL Base 7.6 - x86_64
+mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirrorlist
+#baseurl=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64
+gpgcheck=1
+gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
+EOF'
+  sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
+  sudo yum install -y libxml2-devel
+fi
 
 # Set up cmake alias such to be able to use it
 # FIXME: this is will basically change permanently the system of the user

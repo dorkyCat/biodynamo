@@ -40,10 +40,6 @@ jobs:
         yum update -y
         yum install -y redhat-lsb-core sudo xorg-x11-server-Xvfb fontconfig \
           mesa-dri-drivers xorg-x11-xauth which
-        yum -y install centos-release-scl epel-release
-        yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
-          devtoolset-7-gcc* numactl-devel openmpi3-devel freeglut-devel redhat-lsb-core \
-          scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         BDM_CMAKE_FLAGS="-Dparaview=off" ./install.sh << EOF
         y
         EOF
@@ -54,20 +50,6 @@ jobs:
         REGEX='[^-]*'
         [[ $VERSION =~ $REGEX ]]
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
-      
-    - name: Sleep
-      shell: bash
-      run: sleep infinity
-
-    - name: Valgrind tests BioDynaMo
-      shell: bash
-      working-directory: build
-      run: |
-        . scl_source enable devtoolset-7 || true
-        . /etc/profile.d/modules.sh || true
-        module load mpi
-        . $INSTALL_DIR/bin/thisbdm.sh
-        make run-valgrind
 
     - name: System tests BioDynaMo
       shell: bash
@@ -91,7 +73,10 @@ jobs:
         . $INSTALL_DIR/bin/thisbdm.sh
         biodynamo new test-sim
         . ../test/util.inc
-        xvfb-run -d -s "-screen 0 2560x1440x24" run_cmake_simulation test-sim
+        export DISPLAY=:99.0
+        ../util/xvfb-initd.sh start
+        run_cmake_simulation test-sim
+        ../util/xvfb-initd.sh stop
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
