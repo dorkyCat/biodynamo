@@ -40,6 +40,10 @@ jobs:
         yum update -y
         yum install -y redhat-lsb-core sudo xorg-x11-server-Xvfb fontconfig \
           mesa-dri-drivers xorg-x11-xauth which
+        yum -y install centos-release-scl epel-release
+        yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
+          devtoolset-7-gcc* numactl-devel openmpi3-devel freeglut-devel redhat-lsb-core \
+          scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         BDM_CMAKE_FLAGS="-Dparaview=off" ./install.sh << EOF
         y
         EOF
@@ -50,36 +54,20 @@ jobs:
         REGEX='[^-]*'
         [[ $VERSION =~ $REGEX ]]
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
-
-    - name: Live debugging
-      shell: bash
-      run: |
-        yum install epel-release -y
-        yum update -y
-        yum install -y tmate openssh-clients
-        mkdir -p ~/.ssh
-        
-    - name: Live debuggin (part 2)
-      shell: bash
-      run: |
-        echo -e 'y\n'|ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
-        tmate -S /tmp/tmate.sock new-session -d
-        tmate -S /tmp/tmate.sock wait tmate-ready
-        tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
       
     - name: Sleep
       shell: bash
       run: sleep infinity
 
-    # - name: Valgrind tests BioDynaMo
-    #   shell: bash
-    #   working-directory: build
-    #   run: |
-    #     . scl_source enable devtoolset-7 || true
-    #     . /etc/profile.d/modules.sh || true
-    #     module load mpi
-    #     . $INSTALL_DIR/bin/thisbdm.sh
-    #     make run-valgrind
+    - name: Valgrind tests BioDynaMo
+      shell: bash
+      working-directory: build
+      run: |
+        . scl_source enable devtoolset-7 || true
+        . /etc/profile.d/modules.sh || true
+        module load mpi
+        . $INSTALL_DIR/bin/thisbdm.sh
+        make run-valgrind
 
     - name: System tests BioDynaMo
       shell: bash
