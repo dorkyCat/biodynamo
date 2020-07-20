@@ -80,10 +80,10 @@
 #   sudo yum install -y libxml2-devel
 # fi
 
-# # Set up cmake alias such to be able to use it
-# # FIXME: this is will basically change permanently the system of the user
-# sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
-#   --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
-#   --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
-#   --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
-#   --family cmake
+# Set up cmake alias such to be able to use it
+# FIXME: this is will basically change permanently the system of the user
+sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
+  --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
+  --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
+  --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
+  --family cmake
