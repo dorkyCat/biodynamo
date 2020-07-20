@@ -41,7 +41,7 @@ jobs:
         . bin/thisbdm.sh
         git config --system user.name "Test User"
         git config --system user.email user@test.com
-        ninja run-demos
+        make run-demos
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
