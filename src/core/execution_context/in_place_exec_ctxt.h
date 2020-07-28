@@ -114,6 +114,7 @@ class InPlaceExecutionContext {
   /// iteration.
   std::vector<SoUid> remove_;
   std::vector<Spinlock*> locks;
+  std::vector<Spinlock*> locks2;
 
   /// Pointer to new sim objects
   std::vector<SimObject*> new_sim_objects_;

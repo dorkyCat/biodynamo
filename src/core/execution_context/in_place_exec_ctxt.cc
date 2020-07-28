@@ -204,10 +204,31 @@ void InPlaceExecutionContext::Execute(
 
   if (param->thread_safety_mechanism_ ==
       Param::ThreadSafetyMechanism::kUserSpecified) {
-    so->CriticalRegion(&locks);
-    std::sort(locks.begin(), locks.end());
-    for (auto* l : locks) {
-      l->lock();
+    while(true) {
+      locks.clear();
+      locks2.clear();
+      so->CriticalRegion(&locks);
+      std::sort(locks.begin(), locks.end());
+      for (auto* l : locks) {
+        l->lock();
+      }
+      so->CriticalRegion(&locks2);
+      std::sort(locks2.begin(), locks2.end());
+      bool same = true;
+      if (locks.size() == locks2.size()) {
+        for( int i = 0; i < locks.size(); ++i) {
+          if (locks[i] != locks2[i]) {
+            same = false;
+            break;
+          }
+        }
+      } else {
+        same = false;
+      }
+      if (same) { break; }
+      for (auto* l : locks) {
+        l->unlock();
+      }
     }
     neighbor_cache_.clear();
     for (auto& op : operations) {
@@ -216,7 +237,6 @@ void InPlaceExecutionContext::Execute(
     for (auto* l : locks) {
       l->unlock();
     }
-    locks.clear();
   } else if (param->thread_safety_mechanism_ ==
              Param::ThreadSafetyMechanism::kAutomatic) {
     auto* nb_mutex_builder = env->GetNeighborMutexBuilder();
