@@ -188,7 +188,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
   }
 
   rm->EndOfIteration();
-
+  kCacheCounter++;
   // FIXME
   // new_so_map_.SetOffset(SoUidGenerator::Get()->GetLastId());
   new_so_map_->RemoveOldCopies();
@@ -345,10 +345,13 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
   env->ForEachNeighbor(for_each, query);
 }
 
-SimObject* InPlaceExecutionContext::GetSimObject(const SoUid& uid) {
+SimObject* InPlaceExecutionContext::GetSimObject(const SoUid& uid, int64_t* cache_id) {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* so = rm->GetSimObject(uid);
+  if (cache_id) {
+    *cache_id = kCacheCounterLastLoadBalance;
+  }
   if (so != nullptr) {
     return so;
   }
@@ -357,12 +360,23 @@ SimObject* InPlaceExecutionContext::GetSimObject(const SoUid& uid) {
   return (*new_so_map_)[uid].first;
 }
 
-const SimObject* InPlaceExecutionContext::GetConstSimObject(const SoUid& uid) {
-  return GetSimObject(uid);
+const SimObject* InPlaceExecutionContext::GetConstSimObject(const SoUid& uid, int64_t* cache_id) {
+  return GetSimObject(uid, cache_id);
 }
 
 void InPlaceExecutionContext::RemoveFromSimulation(const SoUid& uid) {
   remove_.push_back(uid);
+}
+
+int64_t InPlaceExecutionContext::kCacheCounter = 0;
+int64_t InPlaceExecutionContext::kCacheCounterLastLoadBalance = 0;
+
+bool InPlaceExecutionContext::IsCacheValid(int64_t cache_id) const {
+  return cache_id == kCacheCounterLastLoadBalance;
+}
+
+void InPlaceExecutionContext::UpdateLoadBalance() {
+  kCacheCounterLastLoadBalance = kCacheCounter;
 }
 
 // TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*

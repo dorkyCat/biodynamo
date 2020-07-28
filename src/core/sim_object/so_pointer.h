@@ -79,12 +79,11 @@ class SoPointer {
   
   SoPointer& operator=(const SoPointer& other) {
     if (this != &other) {
-// #pragma omp critical
-//     std::cout << uid_ << " reset to " << other.uid_ << " " << this << std::endl;
     std::lock_guard<Spinlock> guard(lock_);
       uid_ = other.uid_;
-      cache_so_ = other.cache_so_;
-      cache_id_ = other.cache_id_;
+      // reset to invalid cache state to avoid race conditions in op->
+      cache_so_ = nullptr;
+      cache_id_ = -1;
     }
     return *this;
   }
@@ -92,8 +91,6 @@ class SoPointer {
   /// Assignment operator that changes the internal representation to nullptr.
   /// Makes the following statement possible `so_ptr = nullptr;`
   SoPointer& operator=(std::nullptr_t) {
-// #pragma omp critical
-//     std::cout << uid_ << " reset to nullptr " << this << std::endl;
     std::lock_guard<Spinlock> guard(lock_);
     uid_ = SoUid();
     cache_so_ = nullptr;
@@ -103,46 +100,32 @@ class SoPointer {
 
   TSimObject* operator->() {
     assert(*this != nullptr);
-// #pragma omp critical
-//     {
-//     so = Cast<SimObject, TSimObject>(ctxt->GetSimObject(uid_));
-//     std::cout << uid_ << " " << so << std::endl;
-//     }
-// #pragma omp critical
-//     std::cout << uid_ << " before call to ctxt->GetSimObject " << this << std::endl;
+    auto* local_cache_so = cache_so_; 
+    auto local_cache_id = cache_id_; 
     
-// #pragma omp critical
-//     {
-    // std::cout << uid_ << " " << so << " after  call to ctxt->GetSimObject " << this << std::endl;
-    if (!cache_so_) { // && cache_id_ != -1) {
-      // std::cout << uid_ << " " << so << " set cache " << this << std::endl;
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+    if (local_cache_so && ctxt->IsCacheValid(local_cache_id)) {
+      return local_cache_so;
+    }
     std::lock_guard<Spinlock> guard(lock_);
-        auto* so =  Cast<SimObject, TSimObject>(ctxt->GetSimObject(uid_));
-      cache_so_ = so;
-      return so;
-//     } else if (cache_so_ && cache_so_ != so) {
-// #pragma omp critical
-//         std::cout << "DIFF " << uid_ << " - " << so << " - " << cache_so_ << " " << this << std::endl;
-      } 
-    return cache_so_;
+    auto* so =  Cast<SimObject, TSimObject>(ctxt->GetSimObject(uid_, &cache_id_));
+    cache_so_ = so;
+    return so;
   }
-  mutable TSimObject* cache_so_ = nullptr;
-  int64_t cache_id_ = -1;
 
   const TSimObject* operator->() const {
     assert(*this != nullptr);
-
-
-    if (!cache_so_) {
-    std::lock_guard<Spinlock> guard(lock_);
+    auto* local_cache_so = cache_so_; 
+    auto local_cache_id = cache_id_; 
+    
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-      auto* so=  Cast<const SimObject, const TSimObject>(
-        ctxt->GetConstSimObject(uid_));
-      cache_so_ = const_cast<TSimObject*>(so); 
-      return so;    
-    } 
-    return const_cast<const TSimObject*>(cache_so_);
+    if (local_cache_so && ctxt->IsCacheValid(local_cache_id)) {
+      return const_cast<const TSimObject*>(local_cache_so);
+    }
+    std::lock_guard<Spinlock> guard(lock_);
+    auto* so =  Cast<const SimObject, const TSimObject>(ctxt->GetConstSimObject(uid_, &cache_id_));
+    cache_so_ = const_cast<TSimObject*>(so); 
+    return so;
   }
 
   friend std::ostream& operator<<(std::ostream& str, const SoPointer& so_ptr) {
@@ -162,6 +145,8 @@ class SoPointer {
 
  private:
   SoUid uid_;
+  mutable TSimObject* cache_so_ = nullptr;
+  mutable int64_t cache_id_ = -1;
   mutable Spinlock lock_;
 
   template <typename TFrom, typename TTo>

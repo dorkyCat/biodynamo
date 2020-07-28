@@ -15,6 +15,7 @@
 #include "core/resource_manager.h"
 #include "core/environment/environment.h"
 #include "core/simulation.h"
+#include "core/execution_context/in_place_exec_ctxt.h"
 
 namespace bdm {
 
@@ -308,6 +309,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   if (Simulation::GetActive()->GetParam()->debug_numa_) {
     DebugNuma();
   }
+  InPlaceExecutionContext::UpdateLoadBalance();
 }
 
 void ResourceManager::DebugNuma() const {

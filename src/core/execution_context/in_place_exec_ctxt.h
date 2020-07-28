@@ -98,13 +98,19 @@ class InPlaceExecutionContext {
       Functor<void, const SimObject*, double>& lambda, const SimObject& query,
       double squared_radius);
 
-  SimObject* GetSimObject(const SoUid& uid);
+  SimObject* GetSimObject(const SoUid& uid, int64_t* cache_id = nullptr);
 
-  const SimObject* GetConstSimObject(const SoUid& uid);
+  const SimObject* GetConstSimObject(const SoUid& uid, int64_t* cache_id = nullptr);
 
   void RemoveFromSimulation(const SoUid& uid);
 
+  bool IsCacheValid(int64_t cache) const;
+
+  static void UpdateLoadBalance();
+
  private:
+  static int64_t kCacheCounter;
+  static int64_t kCacheCounterLastLoadBalance;
   /// Lookup table SoUid -> SoPointer for new created sim objects
   std::shared_ptr<ThreadSafeSoUidMap> new_so_map_;
 
