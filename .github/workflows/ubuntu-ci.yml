@@ -56,6 +56,9 @@ jobs:
         path: build/third_party
         key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v2
+
     - name: Build BioDynaMo
       shell: bash
       run: |
