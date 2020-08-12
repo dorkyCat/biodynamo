@@ -24,9 +24,11 @@ jobs:
     - name: Install BioDynaMo
       shell: bash
       run: |
+        set -x
         sudo apt update
         sudo apt install -y curl
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GITHUB_REF#refs/heads/}/util/install | bash
+        set -x
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
