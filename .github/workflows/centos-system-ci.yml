@@ -89,6 +89,7 @@ jobs:
 
     - name: Install prerequisites (on pull request)
       run: |
+        yum install -y sudo
         ./prerequisites.sh all
       if: github.event_name == 'pull_request' 
 
