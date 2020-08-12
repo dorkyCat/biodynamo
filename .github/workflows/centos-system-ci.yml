@@ -87,6 +87,11 @@ jobs:
         echo "::set-env name=INSTALL_DIR::${GITHUB_WORKSPACE}/build"
       if: github.event_name == 'pull_request' 
 
+    - name: Install prerequisites (on pull request)
+      run: |
+        ./prerequisites.sh all
+      if: github.event_name == 'pull_request' 
+
     - name: Build BioDynaMo
       shell: bash
       run: |
