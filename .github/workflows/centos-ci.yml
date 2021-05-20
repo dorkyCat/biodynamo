@@ -103,7 +103,6 @@ jobs:
     - name: Dump package and environment information
       shell: bash
       run: |
-        set -x
         echo '<uname>'
         uname -a || echo 'n/a'
         echo '</uname>'
@@ -120,7 +119,7 @@ jobs:
         . /etc/profile.d/modules.sh || true
         module load mpi || echo 'n/a'
         cd build
-        echo '<dependency-graph lang="dot">
+        echo '<dependency-graph lang="dot">'
         cmake --graphviz=test.dot . || echo 'n/a'
         echo '</dependency-graph>'
         echo '<environment-pre-bdm>'
