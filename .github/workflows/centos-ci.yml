@@ -103,37 +103,37 @@ jobs:
     - name: Dump package and environment information
       shell: bash
       run: |
-        echo '<kernel>'
-        cat /proc/version
-        echo '</kernel>'
-        echo '<lsb-release>'
-        lsb_release -a
-        echo '</lsb-release>'
+        echo '<uname>'
+        uname -a || echo 'n/a'
+        echo '</uname>'
+        echo '<os-release>'
+        cat /etc/os-release || echo 'n/a'
+        echo '</os-release>'
         echo '<modules-pre-bdm>'
-        lsmod
+        lsmod || echo 'n/a'
         echo '</modules-pre-bdm>'
         echo '<environment-raw>'
-        ( set -o posix ; set )
+        ( set -o posix ; set ) || echo 'n/a'
         echo '</environment-raw>'
         . scl_source enable devtoolset-8 || true
         . /etc/profile.d/modules.sh || true
-        module load mpi
+        module load mpi || echo 'n/a'
         cd build
         echo '<dependency-graph lang="dot">
-        cmake --graphviz=test.dot .
+        cmake --graphviz=test.dot . || echo 'n/a'
         echo '</dependency-graph>'
         echo '<environment-pre-bdm>'
-        ( set -o posix ; set )
+        ( set -o posix ; set ) || echo 'n/a'
         echo '</environment-pre-bdm>'
         . bin/thisbdm.sh
         export DISPLAY=:99.0
         sleep 3
         echo '<modules-bdm>'
-        lsmod
+        lsmod || echo 'n/a'
         echo '</modules-bdm>'        
         echo '<environment-bdm>'
-        ( set -o posix ; set )
+        ( set -o posix ; set ) || echo 'n/a'
         echo '</environment-bdm>'
         echo '<packages-bdm>'
-        yum list installed
+        yum list installed || echo 'n/a'
         echo '</packages-bdm>' 
