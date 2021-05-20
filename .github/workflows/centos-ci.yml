@@ -15,6 +15,9 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
+        echo '<packages-pre-bdm>'
+        yum list installed || echo 'n/a'
+        echo '</packages-pre-bdm>' 
         yum -y update
         yum -y install centos-release-scl epel-release
         yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
@@ -118,6 +121,10 @@ jobs:
         . scl_source enable devtoolset-8 || true
         . /etc/profile.d/modules.sh || true
         module load mpi || echo 'n/a'
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
         cd build
         echo '<dependency-graph lang="dot">'
         cmake --graphviz=test.dot . || echo 'n/a'
