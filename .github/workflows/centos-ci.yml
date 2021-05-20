@@ -103,6 +103,7 @@ jobs:
     - name: Dump package and environment information
       shell: bash
       run: |
+        set -x
         echo '<uname>'
         uname -a || echo 'n/a'
         echo '</uname>'
