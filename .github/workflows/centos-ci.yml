@@ -13,11 +13,14 @@ jobs:
       image: centos:7
 
     steps:
-    - name: Install dependencies
+    - name: Dump base information
       run: |
         echo '<packages-pre-bdm>'
         yum list installed || echo 'n/a'
         echo '</packages-pre-bdm>' 
+
+    - name: Install dependencies
+      run: |
         yum -y update
         yum -y install centos-release-scl epel-release
         yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
@@ -124,15 +127,15 @@ jobs:
         export PATH="$HOME/.pyenv/bin:$PATH"
         eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
-        pyenv shell 3.9.1
+        pyenv shell 3.9.1 >/dev/null 2>&1
         cd build
         echo '<dependency-graph lang="dot">'
-        cmake --graphviz=test.dot . || echo 'n/a'
+        cmake --graphviz=dep.dot . >/dev/null 2>&1 && cat dep.dot || echo 'n/a'
         echo '</dependency-graph>'
         echo '<environment-pre-bdm>'
         ( set -o posix ; set ) || echo 'n/a'
         echo '</environment-pre-bdm>'
-        . bin/thisbdm.sh
+        . bin/thisbdm.sh >/dev/null 2>&1
         export DISPLAY=:99.0
         sleep 3
         echo '<modules-bdm>'
