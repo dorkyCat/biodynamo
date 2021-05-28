@@ -40,6 +40,7 @@ function WrapInTag {
 function Centos7InfoDumpInit {
     touch "$XML_OUT"
     yum list installed | WrapInTag 'packages-pre-bdm'
+    return 0
 }
 
 function Centos7InfoDump {
@@ -48,16 +49,15 @@ function Centos7InfoDump {
     WrapInTag 'os-release' < /etc/os-release
     lsmod | WrapInTag 'modules-pre-bdm'
     ( set -o posix ; set ) | WrapInTag 'environment-raw'
-    . scl_source enable devtoolset-8
-    . /etc/profile.d/modules.sh
-    module load mpi
+    . scl_source enable devtoolset-8 || echo 'skip'
+    . /etc/profile.d/modules.sh || echo 'skip'
+    module load mpi || echo 'skip'
     export PATH="$HOME/.pyenv/bin:$PATH"
     eval "$(pyenv init --path)"
     eval "$(pyenv init -)"
     pyenv shell 3.9.1
     cd build || return 1
     cmake --graphviz=dep.dot . && cat dep.dot | WrapInTag 'dependency-graph'
-    echo 'environment-pre-bdm'
     ( set -o posix; set ) | WrapInTag 'environment-pre-bdm'
     . bin/thisbdm.sh
     export DISPLAY=:99.0
@@ -69,6 +69,8 @@ function Centos7InfoDump {
     cmake --version | head -n 1 | ggrep -Po '\d+.\d+.\d+' | WrapInTag 'cmake-version'
     cmake -LA -N . | awk '{if(f)print} /-- Cache values/{f=1}' | WrapInTag 'cmake-build-environment'
     biodynamo --version | WrapInTag 'bdm-version'
+    mpiexec --version | head -n 1 | WrapInTag 'mpi-version'
+    g++ --version | WrapInTag 'compiler-version'
     root --version 2>&1 | grep -Po '\d+.\d+/.*' | head -n 1 | WrapInTag 'root-version'
     python3 --version | grep -Po '\d+.\d.\d' | WrapInTag 'python3-version'
     paraview --version | grep -Po '\d+.\d+.\d+' | WrapInTag 'paraview-version'
