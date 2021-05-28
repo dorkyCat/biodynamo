@@ -64,7 +64,7 @@ function Centos7InfoDump {
     ( set -o posix; set ) | WrapInTag 'environment-bdm'
     yum list installed | WrapInTag 'packages-bdm'
     yum repolist | WrapInTag 'repos-bdm'
-    cmake --version | head -n 1 | ggrep -Po '\d+.\d+.\d+' | WrapInTag 'cmake-version'
+    cmake --version | head -n 1 | grep -Po '\d+.\d+.\d+' | WrapInTag 'cmake-version'
     cmake -LA -N . | awk '{if(f)print} /-- Cache values/{f=1}' | WrapInTag 'cmake-build-environment'
     biodynamo --version | WrapInTag 'bdm-version'
     mpiexec --version | head -n 1 | WrapInTag 'mpi-version'
