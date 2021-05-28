@@ -44,7 +44,6 @@ function Centos7InfoDumpInit {
 }
 
 function Centos7InfoDump {
-    cd "$HOME" || return 1
     uname -a | WrapInTag 'uname'
     WrapInTag 'os-release' < /etc/os-release
     lsmod | WrapInTag 'modules-pre-bdm'
@@ -56,8 +55,6 @@ function Centos7InfoDump {
     eval "$(pyenv init --path)"
     eval "$(pyenv init -)"
     pyenv shell 3.9.1
-    ls
-    cd biodynamo/build || return 1
     cmake --graphviz=dep.dot . && cat dep.dot | WrapInTag 'dependency-graph'
     ( set -o posix; set ) | WrapInTag 'environment-pre-bdm'
     . bin/thisbdm.sh
