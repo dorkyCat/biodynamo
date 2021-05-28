@@ -13,11 +13,16 @@ jobs:
       image: centos:7
 
     steps:
-    - name: Dump base information
+    - name: Checkout BioDynaMo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Dump initial build-related information
+      shell: bash
       run: |
-        echo '<packages-pre-bdm>'
-        yum list installed || echo 'n/a'
-        echo '</packages-pre-bdm>' 
+        . util/git/actions_util/ci-info.sh
+        Centos7InfoDumpInit
 
     - name: Install dependencies
       run: |
@@ -69,11 +74,6 @@ jobs:
         PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
         pyenv shell 3.9.1
 
-    - name: Checkout BioDynaMo
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-
     - name: Cache Third Party Packages
       uses: actions/cache@v2
       with:
@@ -105,45 +105,17 @@ jobs:
         export DISPLAY=:99.0
         sleep 3
         ninja run-unit-tests
-        
-    - name: Dump package and environment information
+
+    - name: Dump all build-related information
       shell: bash
+      continue-on-error: true
       run: |
-        echo '<uname>'
-        uname -a || echo 'n/a'
-        echo '</uname>'
-        echo '<os-release>'
-        cat /etc/os-release || echo 'n/a'
-        echo '</os-release>'
-        echo '<modules-pre-bdm>'
-        lsmod || echo 'n/a'
-        echo '</modules-pre-bdm>'
-        echo '<environment-raw>'
-        ( set -o posix ; set ) || echo 'n/a'
-        echo '</environment-raw>'
-        . scl_source enable devtoolset-8 || true
-        . /etc/profile.d/modules.sh || true
-        module load mpi || echo 'n/a'
-        export PATH="$HOME/.pyenv/bin:$PATH"
-        eval "$(pyenv init --path)"
-        eval "$(pyenv init -)"
-        pyenv shell 3.9.1 >/dev/null 2>&1
-        cd build
-        echo '<dependency-graph lang="dot">'
-        cmake --graphviz=dep.dot . >/dev/null 2>&1 && cat dep.dot || echo 'n/a'
-        echo '</dependency-graph>'
-        echo '<environment-pre-bdm>'
-        ( set -o posix ; set ) || echo 'n/a'
-        echo '</environment-pre-bdm>'
-        . bin/thisbdm.sh >/dev/null 2>&1
-        export DISPLAY=:99.0
-        sleep 3
-        echo '<modules-bdm>'
-        lsmod || echo 'n/a'
-        echo '</modules-bdm>'        
-        echo '<environment-bdm>'
-        ( set -o posix ; set ) || echo 'n/a'
-        echo '</environment-bdm>'
-        echo '<packages-bdm>'
-        yum list installed || echo 'n/a'
-        echo '</packages-bdm>' 
+        . util/git/actions_util/ci-info.sh
+        Centos7InfoDump
+
+    - name: 'Create infodump artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        name: centos-7-infodump
+        path: ${{ env.HOME }}/ci-run-info.xml
+        retention-days: 7
