@@ -56,7 +56,8 @@ function Centos7InfoDump {
     eval "$(pyenv init --path)"
     eval "$(pyenv init -)"
     pyenv shell 3.9.1
-    cd build || return 1
+    ls
+    cd biodynamo/build || return 1
     cmake --graphviz=dep.dot . && cat dep.dot | WrapInTag 'dependency-graph'
     ( set -o posix; set ) | WrapInTag 'environment-pre-bdm'
     . bin/thisbdm.sh
