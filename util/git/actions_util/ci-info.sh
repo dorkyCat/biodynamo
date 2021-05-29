@@ -71,6 +71,8 @@ function Centos7InfoDump {
     g++ --version | head -n 1 | WrapInTag 'compiler-version'
     python3 --version | grep -Po '\d+.\d.\d' | WrapInTag 'python3-version'
     pip3 list --format=freeze --disable-pip-version-check | WrapInTag 'pip-packages'
-    ( echo "<os version='centos-7'>"; cat "$XML_OUT"; echo "</os>" ) > "$XML_OUT"
+    ( echo "<os version='centos-7'>"; cat "$XML_OUT"; echo "</os>" ) > "${XML_OUT}.bak"
+    rm "$XML_OUT"
+    mv "${XML_OUT}.bak" "$XML_OUT"
     return 0
 }
