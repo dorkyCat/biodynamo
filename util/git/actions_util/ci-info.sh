@@ -69,9 +69,7 @@ function Centos7InfoDump {
     biodynamo --version | WrapInTag 'bdm-version'
     mpiexec --version | head -n 1 | WrapInTag 'mpi-version'
     g++ --version | head -n 1 | WrapInTag 'compiler-version'
-    # root --version 2>&1 | grep -Po '\d+.\d+/.*' | head -n 1 | WrapInTag 'root-version'
     python3 --version | grep -Po '\d+.\d.\d' | WrapInTag 'python3-version'
-    paraview --version | grep -Po '\d+.\d+.\d+' | WrapInTag 'paraview-version'
     pip3 list --format=freeze --disable-pip-version-check | WrapInTag 'pip-packages'
     ( echo "<os version='centos-7'>"; cat "$XML_OUT"; echo "</os>" ) > "$XML_OUT"
     return 0
