@@ -13,66 +13,88 @@
 #
 # -----------------------------------------------------------------------------
 
-XML_OUT="$HOME/ci-run-info.xml"
+# This script is used to sample build/environment related information from our
+# GitHub Actions runs. This information helps us determine the side-effects of 
+# installing and using BioDynaMo.
 
-# DESCRIPTION: Wrap string or stdin in given XML tag, append to XML_OUT
-# USAGE: WrapInTag <tag-name> <str-or-stdin>
-function WrapInTag {
-    # pattern source: https://stackoverflow.com/a/12873723/13380539
-    local escpat='s/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&#39;/g'
-    local tag=$(echo "$1" | sed 's/[^[:alpha:]-]//g' | tr '[:upper:]' '[:lower:]' || echo 'error')
-    local res=''
-    local retc=0
-    if (($# == 0)); then
-        tag='error'
-        retc=1
-        echo 'Tag name required.'
-        echo 'USAGE: WrapInTag <tag-name> <str-or-stdin>'
-    elif (( $# == 1 )); then # pipe/redir
-        res=$(sed "$escpat" < /dev/stdin)
-    else # 2nd string arg
-        res=$(sed "$escpat" <<< "$2")
-    fi
-    echo "<$tag>$res</$tag>" >> "$XML_OUT"
-    return $retc
+XML_OUT="$HOME/ci-run-info.xml"
+DIGIT_PAT='[[:digit:]]+.[[:digit:]]+.[[:digit:]]+'
+
+# Description: Wrap string or stdin in given XML tag, append to XML_OUT
+# Usage: Tagged <tag-name> <str-or-stdin>
+function Tagged {
+  # pattern source: https://stackoverflow.com/a/12873723/13380539
+  local escpat='s/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g; s/'"'"'/\&#39;/g'
+  local tag=$(echo "$1" | sed 's/[^[:alpha:]-]//g' | tr '[:upper:]' '[:lower:]' || echo 'error')
+  local res=''
+  local retc=0
+  if (($# == 0)); then
+    tag='error'
+    retc=1
+    echo 'Tag name required.'
+    echo 'USAGE: Tagged <tag-name> <str-or-stdin>'
+  elif (($# == 1)); then # pipe/redir
+    res=$(sed "$escpat" </dev/stdin)
+  else # 2nd string arg
+    res=$(sed "$escpat" <<<"$2")
+  fi
+  echo "<$tag>$res</$tag>" >>"$XML_OUT"
+  return $retc
+}
+
+# Collect info BEFORE thisdbm using commands common to most GNU/Linux systems
+function CommonLinuxPreBdmInfoDump {
+  uname -a | Tagged 'uname'
+  Tagged 'os-release' </etc/os-release
+  ( set -o posix; set ) | Tagged 'environment-pre-bdm'
+  lsmod | Tagged 'modules-pre-bdm'
+}
+
+# Collect info AFTER thisdbm
+function CommonLinuxBdmInfoDump {
+  lsmod | Tagged 'modules-bdm'
+  cmake --graphviz=dep.dot . && cat dep.dot | Tagged 'dependency-graph'
+  rm dep.dot
+  cmake --version | head -n 1 | grep -Eo "$DIGIT_PAT" | Tagged 'cmake-version'
+  cmake -LA -N . | awk '{if(f)print} /-- Cache values/{f=1}' | Tagged 'cmake-build-environment'
+  biodynamo --version | Tagged 'bdm-version'
+  mpiexec --version | head -n 1 | Tagged 'mpi-version'
+  g++ --version | head -n 1 | Tagged 'compiler-version'
+  python3 --version | grep -Eo "$DIGIT_PAT" | Tagged 'python3-version'
+  pip3 list --format=freeze --disable-pip-version-check | Tagged 'pip-packages'
+}
+
+function CompleteDumpXML {
+  # $1 is os name attribute
+  (
+    echo '<?xml version="1.0"?>'
+    echo "<os name='$1'>"
+    cat "$XML_OUT"
+    echo '</os>'
+  ) >"${XML_OUT}.bak"
+  rm "$XML_OUT" && mv "${XML_OUT}.bak" "$XML_OUT"
 }
 
 function Centos7InfoDumpInit {
-    touch "$XML_OUT"
-    yum list installed | WrapInTag 'packages-pre-bdm'
-    return 0
+  touch "$XML_OUT"
+  yum list installed | Tagged 'packages-pre-bdm'
 }
 
 function Centos7InfoDump {
-    uname -a | WrapInTag 'uname'
-    WrapInTag 'os-release' < /etc/os-release
-    lsmod | WrapInTag 'modules-pre-bdm'
-    ( set -o posix ; set ) | WrapInTag 'environment-raw'
-    . scl_source enable devtoolset-8 || echo 'skip'
-    . /etc/profile.d/modules.sh || echo 'skip'
-    module load mpi || echo 'skip'
-    export PATH="$HOME/.pyenv/bin:$PATH"
-    eval "$(pyenv init --path)"
-    eval "$(pyenv init -)"
-    pyenv shell 3.9.1
-    cmake --graphviz=dep.dot . && cat dep.dot | WrapInTag 'dependency-graph'
-    ( set -o posix; set ) | WrapInTag 'environment-pre-bdm'
-    . bin/thisbdm.sh
-    export DISPLAY=:99.0
-    sleep 3
-    lsmod | WrapInTag 'modules-bdm'
-    ( set -o posix; set ) | WrapInTag 'environment-bdm'
-    yum list installed | WrapInTag 'packages-bdm'
-    yum repolist | WrapInTag 'repos-bdm'
-    cmake --version | head -n 1 | grep -Po '\d+.\d+.\d+' | WrapInTag 'cmake-version'
-    cmake -LA -N . | awk '{if(f)print} /-- Cache values/{f=1}' | WrapInTag 'cmake-build-environment'
-    biodynamo --version | WrapInTag 'bdm-version'
-    mpiexec --version | head -n 1 | WrapInTag 'mpi-version'
-    g++ --version | head -n 1 | WrapInTag 'compiler-version'
-    python3 --version | grep -Po '\d+.\d.\d' | WrapInTag 'python3-version'
-    pip3 list --format=freeze --disable-pip-version-check | WrapInTag 'pip-packages'
-    ( echo "<os version='centos-7'>"; cat "$XML_OUT"; echo "</os>" ) > "${XML_OUT}.bak"
-    rm "$XML_OUT"
-    mv "${XML_OUT}.bak" "$XML_OUT"
-    return 0
+  CommonLinuxPreBdmInfoDump
+  . scl_source enable devtoolset-8 || echo 'skip'
+  . /etc/profile.d/modules.sh || echo 'skip'
+  module load mpi || echo 'skip'
+  export PATH="$HOME/.pyenv/bin:$PATH"
+  eval "$(pyenv init --path)"
+  eval "$(pyenv init -)"
+  pyenv shell 3.9.1
+  export DISPLAY=:99.0
+  sleep 3
+  . bin/thisbdm.sh
+  CommonLinuxBdmInfoDump
+  # RPM specific commands
+  yum list installed | Tagged 'packages-bdm'
+  yum repolist | Tagged 'repos-bdm'
+  CompleteDumpXML 'centos-7'
 }

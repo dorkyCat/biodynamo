@@ -18,7 +18,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Dump initial build-related information
+    - name: Dump initial build/environment info
       shell: bash
       run: |
         . util/git/actions_util/ci-info.sh
@@ -106,7 +106,7 @@ jobs:
         sleep 3
         ninja run-unit-tests
 
-    - name: Dump all build-related information
+    - name: Dump post-completion build/environment info
       shell: bash
       working-directory: build
       continue-on-error: true
@@ -115,7 +115,7 @@ jobs:
         . ../util/git/actions_util/ci-info.sh
         Centos7InfoDump
 
-    - name: 'Create infodump artifact'
+    - name: Create infodump artifact
       uses: actions/upload-artifact@v2
       with:
         name: centos-7-infodump
