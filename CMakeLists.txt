@@ -13,7 +13,7 @@
 # -----------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.19.3 FATAL_ERROR)
-
+set (CMAKE_CXX_STANDARD 11)
 set(policy_new CMP0072 CMP0077)
 foreach(policy ${policy_new})
   if(POLICY ${policy})

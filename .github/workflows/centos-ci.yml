@@ -111,7 +111,7 @@ jobs:
       working-directory: build
       continue-on-error: true
       run: |
-        set -v -x -e
+        set -e
         . ../util/git/actions_util/ci-info.sh
         Centos7InfoDump
 
