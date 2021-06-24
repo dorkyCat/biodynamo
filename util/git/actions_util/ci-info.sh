@@ -50,7 +50,6 @@ function Tagged {
 # Collect info BEFORE thisbdm using
 # commands common to most GNU/Linux systems
 function CommonLinuxPreBdmInfoDump {
-  uname -a | Tagged 'uname'
   Tagged 'os-release' </etc/os-release
   (
     set -o posix
@@ -82,7 +81,6 @@ function CommonLinuxBdmInfoDump {
     set -o posix
     set
   ) | Tagged 'environment-bdm'
-
   lsmod | Tagged 'modules-bdm'
   cmake --graphviz=dep.dot . && cat dep.dot | Tagged 'dependency-graph'
   rm dep.dot
@@ -97,7 +95,8 @@ function CommonLinuxBdmInfoDump {
 }
 
 # $1 os tag name attribute
-function CompleteDumpXML {
+function WriteXML {
+  date -u +"%Y-%m-%dT%H:%M:%SZ" | Tagged "timestamp"
   (
     echo '<?xml version="1.0"?>'
     echo "<os name='$1'>"
@@ -136,5 +135,5 @@ function Centos7InfoDump {
     $(cat ../util/installation/centos-7/package_list_extra) | \
     grep -E '(.x86_64|.noarch)' | Tagged 'packages-bdm-all'
   # done
-  CompleteDumpXML 'centos-7'
+  WriteXML 'centos-7'
 }
