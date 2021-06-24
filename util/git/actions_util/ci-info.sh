@@ -117,10 +117,8 @@ mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirror
 gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
-  echo 'update'
-  yum check-update
   echo 'repolist'
-  yum repolist # | Tagged 'repos-bdm'
+  yum repolist | Tagged 'repos-bdm'
   echo 'all deps'
   yum list -q -t -y available centos-release-scl epel-release wget \
     libXt-devel libXext-devel devtoolset-8-gcc* numactl-devel openmpi3-devel \
@@ -129,7 +127,7 @@ EOF'
     findutils doxygen graphviz valgrind freeglut-devel libxml2-devel \
     llvm-toolset-7 llvm-toolset-7-clang-tools-extra llvm-toolset-7-llvm-devel \
     llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel lapack-devel |
-    grep -E '(.noarch|.x86_64)'# | Tagged 'package-manager-all-deps'
+    grep -E '(.noarch|.x86_64)' | Tagged 'package-manager-all-deps'
   # done
   CompleteDumpXML 'centos-7'
 }
