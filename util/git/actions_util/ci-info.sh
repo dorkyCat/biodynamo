@@ -46,7 +46,7 @@ function Tagged {
   return $retc
 }
 
-# Collect info BEFORE thisbdm using  
+# Collect info BEFORE thisbdm using
 # commands common to most GNU/Linux systems
 function CommonLinuxPreBdmInfoDump {
   uname -a | Tagged 'uname'
@@ -108,7 +108,7 @@ function Centos7InfoDump {
   sleep 3
   CommonLinuxBdmInfoDump
   # RPM specific commands
-  yum list installed | Tagged 'packages-bdm'
+  yum list -t -q -y installed | Tagged 'packages-bdm'
   bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]
 name=Springdale SCL Base 7.6 - x86_64
@@ -120,14 +120,14 @@ EOF'
   echo 'repolist'
   yum repolist | Tagged 'repos-bdm'
   echo 'all deps'
-  yum list -q -t -y available centos-release-scl epel-release wget \
+  yum -y update
+  yum list -t -q -y centos-release-scl epel-release wget \
     libXt-devel libXext-devel devtoolset-8-gcc* numactl-devel openmpi3-devel \
     freeglut-devel git @development zlib-devel bzip2 bzip2-devel \
     readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel \
     findutils doxygen graphviz valgrind freeglut-devel libxml2-devel \
     llvm-toolset-7 llvm-toolset-7-clang-tools-extra llvm-toolset-7-llvm-devel \
-    llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel lapack-devel #|
-    grep -E '(.noarch|.x86_64)' | Tagged 'package-manager-all-deps'
+    llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel lapack-devel | 'packages-bdm-all'
   # done
   CompleteDumpXML 'centos-7'
 }

@@ -13,13 +13,18 @@ jobs:
       image: centos:7
 
     steps:
-    # - name: Checkout BioDynaMo
-    #   uses: actions/checkout@v2
-    #   with:
-    #     fetch-depth: 0
+    - name: Checkout BioDynaMo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: Dump initial build/environment info
       shell: bash
+      run: |
+        . util/git/actions_util/ci-info.sh
+        Centos7InfoDumpInit
+
+    - name: Install dependencies
       run: |
         yum -y update
         yum -y install centos-release-scl epel-release
@@ -34,118 +39,85 @@ jobs:
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
         chmod +x cmake-3.19.3-Linux-x86_64.sh
         ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
-        bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
-        [SCL-core]
-        name=Springdale SCL Base 7.6 - x86_64
-        mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirrorlist
-        #baseurl=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64
-        gpgcheck=1
-        gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
-        EOF'
-        yum -y update
-        yum list -t -y centos-release-scl epel-release wget \
-        libXt-devel libXext-devel devtoolset-8-gcc* numactl-devel openmpi3-devel \
-        freeglut-devel git @development zlib-devel bzip2 bzip2-devel \
-        readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel \
-        findutils doxygen graphviz valgrind freeglut-devel libxml2-devel \
-        llvm-toolset-7 llvm-toolset-7-clang-tools-extra llvm-toolset-7-llvm-devel \
-        llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel lapack-devel
-
-
-    # - name: Install dependencies
-    #   run: |
-    #     yum -y update
-    #     yum -y install centos-release-scl epel-release
-    #     yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
-    #       devtoolset-8-gcc* numactl-devel openmpi3-devel freeglut-devel \
-    #       scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
-    #     yum -y install @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
-    #       sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
-    #     yum -y remove git*
-    #     yum -y install https://packages.endpoint.com/rhel/7/os/x86_64/endpoint-repo-1.7-1.x86_64.rpm
-    #     yum -y install git
-    #     curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
-    #     chmod +x cmake-3.19.3-Linux-x86_64.sh
-    #     ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
         
-    # - name: Start Xvfb
-    #   run: |
-    #     set -e
-    #     yum -y install xorg-x11-server-Xvfb
-    #     XVFBARGS=":99 -ac -screen 0 2560x1440x24"
-    #     /usr/bin/Xvfb $XVFBARGS >> /tmp/Xvfb.out 2>&1 &
-    #     disown -ar
-    #     sleep 3
+    - name: Start Xvfb
+      run: |
+        set -e
+        yum -y install xorg-x11-server-Xvfb
+        XVFBARGS=":99 -ac -screen 0 2560x1440x24"
+        /usr/bin/Xvfb $XVFBARGS >> /tmp/Xvfb.out 2>&1 &
+        disown -ar
+        sleep 3
 
-    # - name: Set OSVERS
-    #   run: |
-    #     ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
-    #     VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
-    #     echo "OSVERS=$ID-$VERSION" >> $GITHUB_ENV
+    - name: Set OSVERS
+      run: |
+        ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+        VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+        echo "OSVERS=$ID-$VERSION" >> $GITHUB_ENV
 
-    # - name: Cache pyenv
-    #   uses: actions/cache@v2
-    #   id: pyenv-cache
-    #   with:
-    #     path: ~/.pyenv
-    #     key: ${{ env.OSVERS }}-pyenv-3.9.1
+    - name: Cache pyenv
+      uses: actions/cache@v2
+      id: pyenv-cache
+      with:
+        path: ~/.pyenv
+        key: ${{ env.OSVERS }}-pyenv-3.9.1
 
-    # - name: Install pyenv dependency
-    #   if: steps.pyenv-cache.outputs.cache-hit != 'true'
-    #   run: |
-    #     if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
-    #       curl https://pyenv.run | bash
-    #     fi
-    #     export PATH="$HOME/.pyenv/bin:$PATH"
-    #     eval "$(pyenv init --path)"
-    #     eval "$(pyenv init -)"
-    #     PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
-    #     pyenv shell 3.9.1
+    - name: Install pyenv dependency
+      if: steps.pyenv-cache.outputs.cache-hit != 'true'
+      run: |
+        if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
+          curl https://pyenv.run | bash
+        fi
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+        pyenv shell 3.9.1
 
-    # - name: Cache Third Party Packages
-    #   uses: actions/cache@v2
-    #   with:
-    #     path: build/third_party
-    #     key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+    - name: Cache Third Party Packages
+      uses: actions/cache@v2
+      with:
+        path: build/third_party
+        key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
-    # - name: Build BioDynaMo
-    #   shell: bash
-    #   run: |
-    #     export PATH="$HOME/.pyenv/bin:$PATH"
-    #     eval "$(pyenv init --path)"
-    #     eval "$(pyenv init -)"
-    #     pyenv shell 3.9.1
-    #     . scl_source enable devtoolset-8 || true
-    #     . /etc/profile.d/modules.sh || true
-    #     module load mpi
-    #     cmake -G Ninja \
-    #       -Dparaview=ON \
-    #       -Dnuma=OFF \
-    #       -DCMAKE_BUILD_TYPE=Release \
-    #       -B build
-    #     cmake --build build --parallel --config Release
+    - name: Build BioDynaMo
+      shell: bash
+      run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
+        . scl_source enable devtoolset-8 || true
+        . /etc/profile.d/modules.sh || true
+        module load mpi
+        cmake -G Ninja \
+          -Dparaview=ON \
+          -Dnuma=OFF \
+          -DCMAKE_BUILD_TYPE=Release \
+          -B build
+        cmake --build build --parallel --config Release
 
-    # - name: Unit tests BioDynaMo
-    #   shell: bash
-    #   working-directory: build
-    #   run: |
-    #     . bin/thisbdm.sh
-    #     export DISPLAY=:99.0
-    #     sleep 3
-    #     ninja run-unit-tests
+    - name: Unit tests BioDynaMo
+      shell: bash
+      working-directory: build
+      run: |
+        . bin/thisbdm.sh
+        export DISPLAY=:99.0
+        sleep 3
+        ninja run-unit-tests
 
-    # - name: Dump post-completion build/environment info
-    #   shell: bash
-    #   working-directory: build
-    #   continue-on-error: true
-    #   run: |
-    #     set -e
-    #     . ../util/git/actions_util/ci-info.sh
-    #     Centos7InfoDump
+    - name: Dump post-completion build/environment info
+      shell: bash
+      working-directory: build
+      continue-on-error: true
+      run: |
+        set -e
+        . ../util/git/actions_util/ci-info.sh
+        Centos7InfoDump
 
-    # - name: Create infodump artifact
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: centos-7-infodump
-    #     path: ~/ci-run-info.xml
-    #     retention-days: 7
+    - name: Create infodump artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: centos-7-infodump
+        path: ~/ci-run-info.xml
+        retention-days: 7
