@@ -66,8 +66,8 @@ function CommonLinuxPyenvSetup {
 }
 
 function BdmConfig {
-  local args=('version' 'root-version' 'opt' 'cxxflags' 'cxxincludes'\
-              'ldflags' 'libs' 'cxx' 'ld' 'cmake-invoke' 'config' 'arch')
+  local args=('version' 'root-version' 'opt' 'cxxflags' 'cxxincludes'
+    'ldflags' 'libs' 'cxx' 'ld' 'cmake-invoke' 'config' 'arch')
   for arg in "${args[@]}"; do
     bdm-config --"${arg}"
   done
@@ -140,7 +140,7 @@ EOF'
     findutils doxygen graphviz valgrind freeglut-devel libxml2-devel \
     llvm-toolset-7 llvm-toolset-7-clang-tools-extra llvm-toolset-7-llvm-devel \
     llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel \
-    lapack-devel | Tagged 'packages-bdm-all'
+    lapack-devel | grep -E '(.x86_64|.noarch)' | Tagged 'packages-bdm-all'
   # done
   CompleteDumpXML 'centos-7'
 }
