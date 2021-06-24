@@ -125,7 +125,7 @@ function Centos7InfoDump {
   CommonLinuxBdmInfoDump
   # RPM specific commands
   yum list -t -q -y installed | Tagged 'packages-bdm'
-  ./../installation/centos-7/additional-repos.sh
+  ./../util/installation/centos-7/additional-repos.sh
   yum -y update
   yum repolist | Tagged 'repos-bdm'
   yum list -t -q -y available \
