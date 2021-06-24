@@ -43,7 +43,7 @@ jobs:
         gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
         EOF'
         yum -y update
-        yum list -q -t -y available centos-release-scl epel-release wget \
+        yum list -t -y centos-release-scl epel-release wget \
         libXt-devel libXext-devel devtoolset-8-gcc* numactl-devel openmpi3-devel \
         freeglut-devel git @development zlib-devel bzip2 bzip2-devel \
         readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel \
