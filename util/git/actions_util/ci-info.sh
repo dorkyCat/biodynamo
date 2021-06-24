@@ -121,7 +121,7 @@ EOF'
   yum repolist | Tagged 'repos-bdm'
   echo 'all deps'
   yum -y update
-  yum list -t -q -y centos-release-scl epel-release wget \
+  yum list -t -q -y available centos-release-scl epel-release wget \
     libXt-devel libXext-devel devtoolset-8-gcc* numactl-devel openmpi3-devel \
     freeglut-devel git @development zlib-devel bzip2 bzip2-devel \
     readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel \
