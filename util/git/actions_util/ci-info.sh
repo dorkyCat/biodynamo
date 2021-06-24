@@ -119,7 +119,7 @@ function Centos7InfoDump {
   module load mpi || _err 'skip'
   CommonLinuxPyenvSetup
   # pip search is dead, so we'll just have to install these optional packages
-  pip3 install $(cat ../util/installation/centos-7/pip_list_extra)
+  pip3 install $(cat ../util/installation/common/pip_list_extra)
   export DISPLAY=:99.0
   sleep 3
   CommonLinuxBdmInfoDump
