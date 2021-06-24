@@ -43,6 +43,56 @@ TEST(TimeSeries, AddExistingData) {
 }
 
 // -----------------------------------------------------------------------------
+TEST(TimeSeries, AddExistingDataWithError) {
+  TimeSeries ts;
+  EXPECT_EQ(0u, ts.Size());
+  ts.Add("my-entry", {1, 2}, {3, 4}, {0.1, 0.2});
+  EXPECT_EQ(1u, ts.Size());
+  EXPECT_TRUE(ts.Contains("my-entry"));
+  const auto& xvals = ts.GetXValues("my-entry");
+  EXPECT_EQ(2u, xvals.size());
+  EXPECT_NEAR(1.0, xvals[0], abs_error<double>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<double>::value);
+  const auto& yvals = ts.GetYValues("my-entry");
+  EXPECT_EQ(2u, yvals.size());
+  EXPECT_NEAR(3.0, yvals[0], abs_error<double>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<double>::value);
+  const auto& yel = ts.GetYErrorLow("my-entry");
+  EXPECT_EQ(2u, yel.size());
+  EXPECT_NEAR(0.1, yel[0], abs_error<double>::value);
+  EXPECT_NEAR(0.2, yel[1], abs_error<double>::value);
+  const auto& yeh = ts.GetYErrorHigh("my-entry");
+  EXPECT_EQ(2u, yeh.size());
+  EXPECT_NEAR(0.1, yeh[0], abs_error<double>::value);
+  EXPECT_NEAR(0.2, yeh[1], abs_error<double>::value);
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, AddExistingDataWithErrorAsym) {
+  TimeSeries ts;
+  EXPECT_EQ(0u, ts.Size());
+  ts.Add("my-entry", {1, 2}, {3, 4}, {0.1, 0.2}, {0.3, 0.4});
+  EXPECT_EQ(1u, ts.Size());
+  EXPECT_TRUE(ts.Contains("my-entry"));
+  const auto& xvals = ts.GetXValues("my-entry");
+  EXPECT_EQ(2u, xvals.size());
+  EXPECT_NEAR(1.0, xvals[0], abs_error<double>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<double>::value);
+  const auto& yvals = ts.GetYValues("my-entry");
+  EXPECT_EQ(2u, yvals.size());
+  EXPECT_NEAR(3.0, yvals[0], abs_error<double>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<double>::value);
+  const auto& yel = ts.GetYErrorLow("my-entry");
+  EXPECT_EQ(2u, yel.size());
+  EXPECT_NEAR(0.1, yel[0], abs_error<double>::value);
+  EXPECT_NEAR(0.2, yel[1], abs_error<double>::value);
+  const auto& yeh = ts.GetYErrorHigh("my-entry");
+  EXPECT_EQ(2u, yeh.size());
+  EXPECT_NEAR(0.3, yeh[0], abs_error<double>::value);
+  EXPECT_NEAR(0.4, yeh[1], abs_error<double>::value);
+}
+
+// -----------------------------------------------------------------------------
 TEST(TimeSeries, AddExistingTwice) {
   TimeSeries ts;
   ts.Add("my-entry", {1, 2}, {3, 4});
@@ -139,12 +189,52 @@ TEST(TimeSeries, AddCollectorAndUpdate) {
 }
 
 // -----------------------------------------------------------------------------
+TEST(TimeSeries, AddCollectorXYAndUpdate) {
+  Simulation sim(TEST_NAME);
+
+  // cells will divide in every step -> the number of agents will double
+  // each iteration
+  StatelessBehavior rapid_division(
+      [](Agent* agent) { bdm_static_cast<Cell*>(agent)->Divide(0.5); });
+  rapid_division.AlwaysCopyToNew();
+  auto* cell = new Cell();
+  cell->AddBehavior(rapid_division.NewCopy());
+  sim.GetResourceManager()->AddAgent(cell);
+
+  auto* ts = sim.GetTimeSeries();
+  auto get_num_agents = [](Simulation* sim) {
+    return static_cast<double>(sim->GetResourceManager()->GetNumAgents());
+  };
+  auto xcollector = [](Simulation* sim) {
+    return sim->GetScheduler()->GetSimulatedSteps() + 3.0;
+  };
+  ts->AddCollector("num-agents", get_num_agents, xcollector);
+  EXPECT_EQ(1u, ts->Size());
+  EXPECT_TRUE(ts->Contains("num-agents"));
+
+  sim.GetScheduler()->Simulate(3);
+
+  // check entries for my-entry
+  const auto& xvals = ts->GetXValues("num-agents");
+  EXPECT_EQ(3u, xvals.size());
+  for (uint64_t i = 0; i < 3; ++i) {
+    EXPECT_NEAR(i + 3, xvals[i], abs_error<double>::value);
+  }
+  const auto& yvals = ts->GetYValues("num-agents");
+  EXPECT_EQ(3u, yvals.size());
+  EXPECT_NEAR(2.0, yvals[0], abs_error<double>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<double>::value);
+  EXPECT_NEAR(8.0, yvals[2], abs_error<double>::value);
+}
+
+// -----------------------------------------------------------------------------
 TEST(TimeSeries, StoreAndLoad) {
   Simulation sim(TEST_NAME);
   TimeSeries ts;
 
-  auto collect_function = [](Simulation* sim) { return 4.0; };
-  ts.AddCollector("collect", collect_function);
+  auto ycollector = [](Simulation* sim) { return 4.0; };
+  auto xcollector = [](Simulation* sim) { return 5.0; };
+  ts.AddCollector("collect", ycollector, xcollector);
 
   ts.Add("my-entry", {1, 2}, {3, 4});
   ts.Save("ts.root");
@@ -171,7 +261,7 @@ TEST(TimeSeries, StoreAndLoad) {
   restored->Update();
   const auto& xvals1 = restored->GetXValues("collect");
   EXPECT_EQ(1u, xvals1.size());
-  EXPECT_NEAR(0.0, xvals1[0], abs_error<double>::value);
+  EXPECT_NEAR(5.0, xvals1[0], abs_error<double>::value);
   const auto& yvals1 = restored->GetYValues("collect");
   EXPECT_EQ(1u, yvals1.size());
   EXPECT_NEAR(4.0, yvals1[0], abs_error<double>::value);

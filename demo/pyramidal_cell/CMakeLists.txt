@@ -11,18 +11,18 @@
 # regarding copyright ownership.
 #
 # -----------------------------------------------------------------------------
+cmake_minimum_required(VERSION 3.2.0)
 
-import os
-import shutil
+project(pyramidal_cell)
 
-from print_command import Print
+find_package(BioDynaMo REQUIRED)
+include(${BDM_USE_FILE})
+include_directories("src")
 
+file(GLOB_RECURSE HEADERS src/*.h)
+file(GLOB_RECURSE SOURCES src/*.cc)
 
-def CopySupportFiles(sim_name):
-    SUPPORT_DIR = os.path.join(os.environ["BDMSYS"], "share", "util",
-                               "support_files")
-    Print.new_step("Copy additional support files")
-    for filename in os.listdir(SUPPORT_DIR):
-        full_file_name = os.path.join(SUPPORT_DIR, filename)
-        if os.path.isfile(full_file_name):
-            shutil.copy(full_file_name, sim_name)
+bdm_add_executable(pyramidal_cell
+                   HEADERS ${HEADERS}
+                   SOURCES ${SOURCES}
+                   LIBRARIES ${BDM_REQUIRED_LIBRARIES})
