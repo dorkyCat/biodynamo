@@ -21,6 +21,7 @@ _XML_OUT="$HOME/ci-run-info.xml"
 _DIGIT_PAT='[[:digit:]]+.[[:digit:]]+.[[:digit:]]+'
 
 function _err {
+  # https://stackoverflow.com/a/3056595
   printf "%.23s %s[%s]: %s\n" $(date +%F.%T.%N) ${BASH_SOURCE[1]##*/} ${BASH_LINENO[0]} "${@}"
 }
 
@@ -60,22 +61,35 @@ function CommonLinuxPreBdmInfoDump {
 
 function CommonLinuxPyenvSetup {
   export PATH="$HOME/.pyenv/bin:$PATH"
-  eval "$(pyenv init --path)"
-  eval "$(pyenv init -)"
+  eval "$(pyenv init --path)" && eval "$(pyenv init -)"
   pyenv shell 3.9.1
-  which python3
+}
+
+function BdmConfig {
+  local args=('version' 'root-version' 'opt' 'cxxflags' 'cxxincludes'\
+              'ldflags' 'libs' 'cxx' 'ld' 'cmake-invoke' 'config' 'arch')
+  for arg in "${args[@]}"; do
+    bdm-config --"${arg}"
+  done
 }
 
 # Collect info AFTER thisbdm
 # Precondition: inside biodynamo build directory
 function CommonLinuxBdmInfoDump {
   . bin/thisbdm.sh
+  BdmConfig
+  (
+    set -o posix
+    set
+  ) | Tagged 'environment-bdm'
+  # pip search is dead, so we'll just have to install these optional packages
+  pip3 install nbformat jupyter metakernel jupyterlab
   lsmod | Tagged 'modules-bdm'
   cmake --graphviz=dep.dot . && cat dep.dot | Tagged 'dependency-graph'
   rm dep.dot
   cmake --version | head -n 1 | grep -Eo "$_DIGIT_PAT" | Tagged 'cmake-version'
   cmake -LA -N . | awk '{if(f)print} /-- Cache values/{f=1}' | Tagged 'cmake-build-environment'
-  biodynamo --version | Tagged 'bdm-version'
+  echo | cpp -fopenmp -dM | grep -i OPENMP | grep -Eo '[[:digit:]]+' | Tagged 'omp-spec'
   mpiexec --version | head -n 1 | Tagged 'mpi-version'
   g++ --version | head -n 1 | Tagged 'compiler-version'
   python3 --version | grep -Eo "$_DIGIT_PAT" | Tagged 'python3-version'
@@ -117,17 +131,16 @@ mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirror
 gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
-  echo 'repolist'
-  yum repolist | Tagged 'repos-bdm'
-  echo 'all deps'
   yum -y update
+  yum repolist | Tagged 'repos-bdm'
   yum list -t -q -y available centos-release-scl epel-release wget \
     libXt-devel libXext-devel devtoolset-8-gcc* numactl-devel openmpi3-devel \
     freeglut-devel git @development zlib-devel bzip2 bzip2-devel \
     readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel \
     findutils doxygen graphviz valgrind freeglut-devel libxml2-devel \
     llvm-toolset-7 llvm-toolset-7-clang-tools-extra llvm-toolset-7-llvm-devel \
-    llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel lapack-devel | Tagged 'packages-bdm-all'
+    llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel \
+    lapack-devel | Tagged 'packages-bdm-all'
   # done
   CompleteDumpXML 'centos-7'
 }
