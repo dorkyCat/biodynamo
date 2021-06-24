@@ -119,7 +119,7 @@ function Centos7InfoDump {
   module load mpi || _err 'skip'
   CommonLinuxPyenvSetup
   # pip search is dead, so we'll just have to install these optional packages
-  pip3 install $(cat ../installation/centos-7/pip_list_extra)
+  pip3 install $(cat ../util/installation/centos-7/pip_list_extra)
   export DISPLAY=:99.0
   sleep 3
   CommonLinuxBdmInfoDump
@@ -129,8 +129,8 @@ function Centos7InfoDump {
   yum -y update
   yum repolist | Tagged 'repos-bdm'
   yum list -t -q -y available \
-    $(cat ../installation/centos-7/package_list_required) \
-    $(cat ../installation/centos-7/package_list_extra) | \
+    $(cat ../util/installation/centos-7/package_list_required) \
+    $(cat ../util/installation/centos-7/package_list_extra) | \
     grep -E '(.x86_64|.noarch)' | Tagged 'packages-bdm-all'
   # done
   CompleteDumpXML 'centos-7'
