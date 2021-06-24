@@ -117,8 +117,11 @@ mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirror
 gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
+  echo 'update'
   yum check-update
+  echo 'repolist'
   yum repolist # | Tagged 'repos-bdm'
+  echo 'all deps'
   yum list -q -t -y available centos-release-scl epel-release wget \
     libXt-devel libXext-devel devtoolset-8-gcc* numactl-devel openmpi3-devel \
     freeglut-devel git @development zlib-devel bzip2 bzip2-devel \
