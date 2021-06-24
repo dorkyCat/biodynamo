@@ -69,7 +69,7 @@ function BdmConfig {
   local args=('version' 'root-version' 'opt' 'cxxflags' 'cxxincludes'
     'ldflags' 'libs' 'cxx' 'ld' 'cmake-invoke' 'config' 'arch')
   for arg in "${args[@]}"; do
-    bdm-config --"${arg}"
+    bdm-config --"${arg}" | Tagged "bdm-${arg}"
   done
 }
 
