@@ -127,7 +127,7 @@ EOF'
     readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel \
     findutils doxygen graphviz valgrind freeglut-devel libxml2-devel \
     llvm-toolset-7 llvm-toolset-7-clang-tools-extra llvm-toolset-7-llvm-devel \
-    llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel lapack-devel | 'packages-bdm-all'
+    llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel lapack-devel | Tagged 'packages-bdm-all'
   # done
   CompleteDumpXML 'centos-7'
 }
