@@ -65,7 +65,7 @@ function CommonLinuxPyenvSetup {
   pyenv shell 3.9.1
 }
 
-function BdmConfig {
+function BdmConfigDump {
   local args=('version' 'root-version' 'opt' 'cxxflags' 'cxxincludes'
     'ldflags' 'libs' 'cxx' 'ld' 'cmake-invoke' 'config' 'arch')
   for arg in "${args[@]}"; do
@@ -77,13 +77,12 @@ function BdmConfig {
 # Precondition: inside biodynamo build directory
 function CommonLinuxBdmInfoDump {
   . bin/thisbdm.sh
-  BdmConfig
+  BdmConfigDump
   (
     set -o posix
     set
   ) | Tagged 'environment-bdm'
-  # pip search is dead, so we'll just have to install these optional packages
-  pip3 install nbformat jupyter metakernel jupyterlab
+
   lsmod | Tagged 'modules-bdm'
   cmake --graphviz=dep.dot . && cat dep.dot | Tagged 'dependency-graph'
   rm dep.dot
@@ -92,6 +91,7 @@ function CommonLinuxBdmInfoDump {
   echo | cpp -fopenmp -dM | grep -i OPENMP | grep -Eo '[[:digit:]]+' | Tagged 'omp-spec'
   mpiexec --version | head -n 1 | Tagged 'mpi-version'
   g++ --version | head -n 1 | Tagged 'compiler-version'
+  pyenv --version | head -n 1 | grep -Eo "$_DIGIT_PAT" | Tagged 'pyenv-version'
   python3 --version | grep -Eo "$_DIGIT_PAT" | Tagged 'python3-version'
   pip3 list --format=freeze --disable-pip-version-check | Tagged 'pip-packages'
 }
@@ -118,29 +118,20 @@ function Centos7InfoDump {
   . /etc/profile.d/modules.sh || _err 'skip'
   module load mpi || _err 'skip'
   CommonLinuxPyenvSetup
+  # pip search is dead, so we'll just have to install these optional packages
+  pip3 install $(cat ../installation/centos-7/pip_list_extra)
   export DISPLAY=:99.0
   sleep 3
   CommonLinuxBdmInfoDump
   # RPM specific commands
   yum list -t -q -y installed | Tagged 'packages-bdm'
-  bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
-[SCL-core]
-name=Springdale SCL Base 7.6 - x86_64
-mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirrorlist
-#baseurl=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64
-gpgcheck=1
-gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
-EOF'
+  ./../installation/centos-7/additional-repos.sh
   yum -y update
   yum repolist | Tagged 'repos-bdm'
-  yum list -t -q -y available centos-release-scl epel-release wget \
-    libXt-devel libXext-devel devtoolset-8-gcc* numactl-devel openmpi3-devel \
-    freeglut-devel git @development zlib-devel bzip2 bzip2-devel \
-    readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel \
-    findutils doxygen graphviz valgrind freeglut-devel libxml2-devel \
-    llvm-toolset-7 llvm-toolset-7-clang-tools-extra llvm-toolset-7-llvm-devel \
-    llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel \
-    lapack-devel | grep -E '(.x86_64|.noarch)' | Tagged 'packages-bdm-all'
+  yum list -t -q -y available \
+    $(cat ../installation/centos-7/package_list_required) \
+    $(cat ../installation/centos-7/package_list_extra) | \
+    grep -E '(.x86_64|.noarch)' | Tagged 'packages-bdm-all'
   # done
   CompleteDumpXML 'centos-7'
 }

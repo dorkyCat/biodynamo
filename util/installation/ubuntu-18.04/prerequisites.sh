@@ -72,9 +72,8 @@ pyenv shell $PYVERS
 # Install optional packages
 if [ $1 == "all" ]; then
   # this updates pip, but installs the updated version in $HOME/.local/bin
-  PIP_PACKAGES="nbformat jupyter metakernel jupyterlab"
   # Don't install --user: the packages should end up in the PYENV_ROOT directory
-  python -m pip install $PIP_PACKAGES
+  python -m pip install $(cat $BDM_PROJECT_DIR/util/installation/common/pip_list_extra)
 
   sudo apt-get install -y \
     $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-18.04/package_list_extra)
