@@ -126,7 +126,7 @@ EOF'
     readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel \
     findutils doxygen graphviz valgrind freeglut-devel libxml2-devel \
     llvm-toolset-7 llvm-toolset-7-clang-tools-extra llvm-toolset-7-llvm-devel \
-    llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel lapack-devel |
+    llvm-toolset-7-llvm-static gdl-devel atlas-devel blas-devel lapack-devel #|
     grep -E '(.noarch|.x86_64)' | Tagged 'package-manager-all-deps'
   # done
   CompleteDumpXML 'centos-7'
