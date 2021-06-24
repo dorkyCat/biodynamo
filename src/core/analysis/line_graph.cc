@@ -64,12 +64,6 @@ TGraph* LineGraph::Add(const std::string& ts_name,
                        float marker_color_alpha, short marker_style,
                        float marker_size, short fill_color,
                        float fill_color_alpha, short fill_style) {
-  auto it = id_tgraph_map_.find(ts_name);
-  if (it != id_tgraph_map_.end()) {
-    Log::Warning("LineGraph::Add", "Graph with id (", ts_name,
-                 ") has already been added. Operation aborted.");
-    return nullptr;
-  }
   if (s_) {
     s_->cd();
   }
@@ -107,7 +101,7 @@ TGraph* LineGraph::Add(const std::string& ts_name,
   if (l_ && legend_label != "") {
     l_->AddEntry(gr, legend_label.c_str());
   }
-  id_tgraph_map_[ts_name] = gr;
+  id_tgraphs_map_[ts_name].push_back(gr);
   return gr;
 }
 
@@ -119,20 +113,32 @@ void LineGraph::Draw(const char* canvas_draw_option) {
 
 // -----------------------------------------------------------------------------
 void LineGraph::SetLegendPos(double x1, double y1, double x2, double y2) {
-  Update();
-  l_->SetX1(x1);
-  l_->SetY1(y1);
-  l_->SetX2(x2);
-  l_->SetY2(y2);
+  if (l_) {
+    Update();
+    l_->SetX1(x1);
+    l_->SetY1(y1);
+    l_->SetX2(x2);
+    l_->SetY2(y2);
+  } else {
+    Log::Warning(
+        "LineGraph::SetLegendPos",
+        "This LineGraph was created without legend. Operation aborted.");
+  }
 }
 
 // -----------------------------------------------------------------------------
 void LineGraph::SetLegendPosNDC(double x1, double y1, double x2, double y2) {
-  Update();
-  l_->SetX1NDC(x1);
-  l_->SetY1NDC(y1);
-  l_->SetX2NDC(x2);
-  l_->SetY2NDC(y2);
+  if (l_) {
+    Update();
+    l_->SetX1NDC(x1);
+    l_->SetY1NDC(y1);
+    l_->SetX2NDC(x2);
+    l_->SetY2NDC(y2);
+  } else {
+    Log::Warning(
+        "LineGraph::SetLegendPosNDC",
+        "This LineGraph was created without legend. Operation aborted.");
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -161,10 +167,12 @@ TMultiGraph* LineGraph::GetTMultiGraph() { return mg_; }
 TLegend* LineGraph::GetTLegend() { return l_; }
 
 // -----------------------------------------------------------------------------
-TGraph* LineGraph::GetTGraph(const std::string& ts_name) {
-  auto it = id_tgraph_map_.find(ts_name);
-  if (it == id_tgraph_map_.end()) {
-    return nullptr;
+const std::vector<TGraph*>& LineGraph::GetTGraphs(
+    const std::string& ts_name) const {
+  auto it = id_tgraphs_map_.find(ts_name);
+  if (it == id_tgraphs_map_.end()) {
+    static std::vector<TGraph*> kEmpty;
+    return kEmpty;
   }
   return it->second;
 }
@@ -178,7 +186,9 @@ void LineGraph::Update() {
     s_->cd();
   }
   mg_->Draw(mg_draw_option_.c_str());
-  l_->Draw();
+  if (l_) {
+    l_->Draw();
+  }
   c_->Update();
   gPad->Modified();
   gPad->Update();
