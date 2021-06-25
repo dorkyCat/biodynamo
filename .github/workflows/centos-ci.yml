@@ -21,7 +21,7 @@ jobs:
     - name: Dump initial build/environment info
       shell: bash
       run: |
-        . util/git/actions_util/ci-info.sh
+        . util/git/gh_actions/ci-info.sh
         Centos7InfoDumpInit
 
     - name: Install dependencies
@@ -112,12 +112,12 @@ jobs:
       continue-on-error: true
       run: |
         set -e
-        . ../util/git/actions_util/ci-info.sh
+        . util/git/gh_actions/ci-info.sh
         Centos7InfoDump
 
     - name: Create infodump artifact
       uses: actions/upload-artifact@v2
       with:
         name: centos-7-infodump
-        path: ~/ci-run-info.xml
+        path: ~/centos-7-ci-run-info.xml
         retention-days: 7

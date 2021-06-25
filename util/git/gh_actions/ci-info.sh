@@ -13,9 +13,9 @@
 #
 # -----------------------------------------------------------------------------
 
-# This script is used to sample build/environment related information from our
-# GitHub Actions runs. This information helps us determine the side-effects of
-# installing and using BioDynaMo, and to create build recipes/guides.
+# This script is used to sample build & environment related information from a
+# GitHub Actions run. This information helps us determine the side-effects of
+# installing and using BioDynaMo, and to create build recipes & guides.
 
 _XML_OUT="$HOME/ci-run-info.xml"
 _DIGIT_PAT='[[:digit:]]+.[[:digit:]]+.[[:digit:]]+'
@@ -74,14 +74,13 @@ function BdmConfigDump {
 
 # Collect info AFTER thisbdm
 # Precondition: inside biodynamo build directory
-function CommonLinuxBdmInfoDump {
+function CommonBdmInfoDump {
   . bin/thisbdm.sh
   BdmConfigDump
   (
     set -o posix
     set
   ) | Tagged 'environment-bdm'
-  lsmod | Tagged 'modules-bdm'
   cmake --graphviz=dep.dot . && cat dep.dot | Tagged 'dependency-graph'
   rm dep.dot
   cmake --version | head -n 1 | grep -Eo "$_DIGIT_PAT" | Tagged 'cmake-version'
@@ -94,6 +93,11 @@ function CommonLinuxBdmInfoDump {
   pip3 list --format=freeze --disable-pip-version-check | Tagged 'pip-packages'
 }
 
+function CommonLinuxBdmInfoDump {
+  CommonBdmInfoDump
+  lsmod | Tagged 'modules-bdm'
+}
+
 # $1 os tag name attribute
 function WriteXML {
   date -u +"%Y-%m-%dT%H:%M:%SZ" | Tagged "timestamp"
@@ -103,7 +107,7 @@ function WriteXML {
     cat "$_XML_OUT"
     echo '</os>'
   ) >"${_XML_OUT}.bak"
-  rm "$_XML_OUT" && mv "${_XML_OUT}.bak" "$_XML_OUT"
+  rm "$_XML_OUT" && mv "${_XML_OUT}.bak" "$1-$_XML_OUT"
 }
 
 function Centos7InfoDumpInit {
@@ -118,21 +122,18 @@ function Centos7InfoDump {
   module load mpi || _err 'skip'
   CommonLinuxPyenvSetup
   # pip search is dead, so we'll just have to install these optional packages
-  pip3 install $(cat ../util/installation/common/pip_list_extra)
+  local inst_util=../util/installation/centos-7
+  pip3 install $(cat $inst_util/../common/pip_list_extra)
   export DISPLAY=:99.0
   sleep 3
   CommonLinuxBdmInfoDump
+  local all_deps="$(cat $inst_util/package_list_required)$(cat $inst_util/package_list_extra)"
   # RPM specific commands
-  yum list -t -q -y installed \
-    $(cat ../util/installation/centos-7/package_list_required) \
-    $(cat ../util/installation/centos-7/package_list_extra) | \
-    Tagged 'packages-bdm'
-  ./../util/installation/centos-7/additional-repos.sh
+  yum list -t -q -y installed $(echo "$all_deps") | Tagged 'packages-bdm'
+  ./$inst_util/additional-repos.sh
   yum -y update
   yum repolist | Tagged 'repos-bdm'
-  yum list -t -q -y available \
-    $(cat ../util/installation/centos-7/package_list_required) \
-    $(cat ../util/installation/centos-7/package_list_extra) | \
+  yum list -t -q -y available $(echo "$all_deps") | \
     grep -E '(.x86_64|.noarch)' | Tagged 'packages-bdm-all'
   # done
   WriteXML 'centos-7'
