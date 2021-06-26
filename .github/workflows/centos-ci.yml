@@ -112,7 +112,7 @@ jobs:
       continue-on-error: true
       run: |
         set -e
-        . util/git/gh_actions/ci-info.sh
+        . ../util/git/gh_actions/ci-info.sh
         Centos7InfoDump
 
     - name: Create infodump artifact
