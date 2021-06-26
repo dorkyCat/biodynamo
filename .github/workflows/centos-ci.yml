@@ -119,5 +119,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: centos-7-infodump
-        path: ~/centos-7-ci-run-info.xml
+        path: ~/ci-run-info-centos-7.xml
         retention-days: 7
