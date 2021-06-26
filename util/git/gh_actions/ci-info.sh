@@ -17,7 +17,7 @@
 # GitHub Actions run. This information helps us determine the side-effects of
 # installing and using BioDynaMo, and to create build recipes & guides.
 
-_XML_OUT="$HOME/ci-run-info.xml"
+_XML_OUT="$HOME/ci-run-info"
 _DIGIT_PAT='[[:digit:]]+.[[:digit:]]+.[[:digit:]]+'
 
 function _err {
@@ -107,7 +107,7 @@ function WriteXML {
     cat "$_XML_OUT"
     echo '</os>'
   ) >"${_XML_OUT}.bak"
-  rm "$_XML_OUT" && mv "${_XML_OUT}.bak" "$1-$_XML_OUT"
+  rm "$_XML_OUT" && mv "${_XML_OUT}.bak" "$_XML_OUT-$1.xml"
 }
 
 function Centos7InfoDumpInit {
